@@ -20,11 +20,13 @@
 USE DATABASE SNOWFLAKE_EXAMPLE;
 
 -- ============================================================================
--- Grant Required Privileges for DMF Usage
+-- Set DMF Schedule (REQUIRED before adding DMFs)
 -- ============================================================================
 
--- Note: SNOWFLAKE.DATA_METRIC_USER database role provides USAGE on system DMFs
--- This is typically granted at account setup, but we ensure it here
+-- Set the schedule FIRST - this is required before associating any DMFs
+-- Using 60 minutes for demo purposes (minimum is 5 minutes)
+ALTER TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    SET DATA_METRIC_SCHEDULE = '60 MINUTE';
 
 -- ============================================================================
 -- Associate NULL_COUNT DMFs
@@ -72,30 +74,11 @@ ALTER TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
     ON (listing_id);
 
 -- ============================================================================
--- Set DMF Schedule (Optional - runs on schedule when set)
--- For demo purposes, we'll run manually or on-demand
--- ============================================================================
-
--- To schedule DMFs to run every hour:
--- ALTER TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
---     SET DATA_METRIC_SCHEDULE = 'USING CRON 0 * * * * UTC';
-
--- ============================================================================
 -- Verify DMF Associations
 -- ============================================================================
 
 -- Show all DMF associations on the table
-SELECT 
-    metric_database,
-    metric_schema,
-    metric_name,
-    ref_entity_database,
-    ref_entity_schema,
-    ref_entity_name,
-    ref_entity_domain,
-    arguments,
-    schedule,
-    schedule_status
+SELECT *
 FROM TABLE(INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES(
     REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS',
     REF_ENTITY_DOMAIN => 'TABLE'

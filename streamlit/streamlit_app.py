@@ -195,7 +195,7 @@ try:
                 ]
             }
             null_df = pd.DataFrame(null_data)
-            st.dataframe(null_df, use_container_width=True, hide_index=True)
+            st.dataframe(null_df, use_container_width=True)
         
         with col2:
             st.markdown("#### Blank/Empty Values")
@@ -207,7 +207,7 @@ try:
                 ]
             }
             blank_df = pd.DataFrame(blank_data)
-            st.dataframe(blank_df, use_container_width=True, hide_index=True)
+            st.dataframe(blank_df, use_container_width=True)
         
         # Duplicates
         st.markdown("#### Duplicate Records")
@@ -243,8 +243,7 @@ try:
                 'NULL_PRICES': 'Null Prices',
                 'BLANK_TYPES': 'Blank Types'
             }),
-            use_container_width=True,
-            hide_index=True
+            use_container_width=True
         )
     
     st.markdown("---")
@@ -263,7 +262,7 @@ try:
                 WHERE price IS NULL
                 LIMIT 100
             """).to_pandas()
-            st.dataframe(null_records, use_container_width=True, hide_index=True)
+            st.dataframe(null_records, use_container_width=True)
     
     with col2:
         st.markdown("##### View Blank Records")
@@ -274,7 +273,7 @@ try:
                 WHERE TRIM(COALESCE(property_type, '')) = ''
                 LIMIT 100
             """).to_pandas()
-            st.dataframe(blank_records, use_container_width=True, hide_index=True)
+            st.dataframe(blank_records, use_container_width=True)
     
     with col3:
         st.markdown("##### View Duplicates")
@@ -287,7 +286,7 @@ try:
                 ORDER BY occurrence_count DESC
                 LIMIT 50
             """).to_pandas()
-            st.dataframe(dup_records, use_container_width=True, hide_index=True)
+            st.dataframe(dup_records, use_container_width=True)
     
     st.markdown("---")
     
@@ -303,15 +302,23 @@ try:
                 'METRIC_VALUE': 'Value',
                 'EXECUTION_TIME': 'Executed At'
             }),
-            use_container_width=True,
-            hide_index=True
+            use_container_width=True
         )
     else:
         st.info("No DMF execution history available yet.")
 
 except Exception as e:
     st.error(f"Error loading data: {str(e)}")
-    st.info("Make sure all tables and dynamic tables have been created and populated.")
+    st.warning("**Troubleshooting Steps:**")
+    st.markdown("""
+1. **Verify deployment completed:** Run `SHOW DYNAMIC TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE;`
+2. **Force refresh if needed:**
+   ```sql
+   ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_QUALITY_SUMMARY REFRESH;
+   ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_MARKET_TRENDS REFRESH;
+   ```
+3. **Click the Refresh Data button above** after running the refresh commands.
+    """)
 
 # Footer
 st.markdown("---")

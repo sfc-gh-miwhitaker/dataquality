@@ -122,6 +122,15 @@ WHERE market_area IS NOT NULL
 GROUP BY COALESCE(market_area, 'Unknown');
 
 -- ============================================================================
+-- Force Immediate Refresh (Required for Demo - No Waiting)
+-- ============================================================================
+
+-- Trigger immediate refresh to populate data for Streamlit dashboard
+-- This ensures data is available within seconds, not waiting for TARGET_LAG
+ALTER DYNAMIC TABLE SFE_ANALYTICS_REALESTATE.SFE_DT_QUALITY_SUMMARY REFRESH;
+ALTER DYNAMIC TABLE SFE_ANALYTICS_REALESTATE.SFE_DT_MARKET_TRENDS REFRESH;
+
+-- ============================================================================
 -- Verify Dynamic Tables
 -- ============================================================================
 
@@ -129,6 +138,7 @@ GROUP BY COALESCE(market_area, 'Unknown');
 -- To verify manually: SHOW DYNAMIC TABLES IN SCHEMA SFE_ANALYTICS_REALESTATE;
 
 SELECT 
-    '✅ Dynamic Tables Created' AS status,
-    'SFE_DT_QUALITY_SUMMARY (1 min lag), SFE_DT_MARKET_TRENDS (5 min lag)' AS tables_created;
+    '✅ Dynamic Tables Created & Refreshed' AS status,
+    'SFE_DT_QUALITY_SUMMARY (1 min lag), SFE_DT_MARKET_TRENDS (5 min lag)' AS tables_created,
+    'Data immediately available - no waiting required' AS note;
 
