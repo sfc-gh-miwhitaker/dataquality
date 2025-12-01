@@ -17,7 +17,6 @@
  * This script creates all necessary Snowflake objects by pulling SQL files
  * from the GitHub repository using native Git integration.
  * 
- * To extend expiration: Run cursor command "extendexpiration 30"
  ******************************************************************************/
 
 -- ============================================================================

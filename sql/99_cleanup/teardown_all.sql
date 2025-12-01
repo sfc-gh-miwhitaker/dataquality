@@ -40,10 +40,8 @@ DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_M
 -- ============================================================================
 
 -- Note: DMF associations are automatically removed when tables are dropped
--- but we explicitly remove them for cleaner audit trails
-
-ALTER TABLE IF EXISTS SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
-    DROP ALL DATA METRIC FUNCTIONS;
+-- via CASCADE, so no explicit removal needed. The schema drop in Step 4
+-- will clean up all DMF associations automatically.
 
 -- ============================================================================
 -- Step 4: Drop Project Schemas (CASCADE drops all contained objects)
