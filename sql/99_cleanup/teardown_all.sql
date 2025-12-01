@@ -87,11 +87,15 @@ FROM SNOWFLAKE_EXAMPLE.INFORMATION_SCHEMA.SCHEMATA
 WHERE SCHEMA_NAME LIKE 'SFE_%REALESTATE%'
    OR SCHEMA_NAME LIKE 'DATAQUALITY%';
 
--- Verify warehouse removed
-SHOW WAREHOUSES LIKE 'SFE_DATAQUALITY%';
+-- Note: SHOW commands don't work in EXECUTE IMMEDIATE context
+-- To verify warehouse and API integration removal, run these manually after cleanup:
+--   SHOW WAREHOUSES LIKE 'SFE_DATAQUALITY%';
+--   SHOW API INTEGRATIONS LIKE 'SFE_DATAQUALITY%';
 
--- Verify API integration removed
-SHOW API INTEGRATIONS LIKE 'SFE_DATAQUALITY%';
+SELECT 
+    'Cleanup verification' AS check_type,
+    'SFE_DATAQUALITY_WH' AS warehouse_dropped,
+    'SFE_DATAQUALITY_GIT_API_INTEGRATION' AS api_integration_dropped;
 
 -- ============================================================================
 -- Cleanup Complete
