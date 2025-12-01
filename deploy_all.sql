@@ -24,23 +24,28 @@
 -- SECTION 0: Expiration Check
 -- Last Updated: 2025-12-01
 -- ============================================================================
+-- This demo expires 30 days after creation.
+-- If expired, deployment should be halted and the repository forked with updated dates.
 
-EXECUTE IMMEDIATE
-$$
-DECLARE
-    v_expiration_date DATE := '2025-12-31';
-    v_days_remaining INT;
-    demo_expired EXCEPTION (-20001, 'DEMO EXPIRED: This project expired on 2025-12-31. Features and syntax may be outdated. Contact your Snowflake SE for current demos.');
-BEGIN
-    v_days_remaining := DATEDIFF('day', CURRENT_DATE(), v_expiration_date);
-    
-    IF (CURRENT_DATE() > v_expiration_date) THEN
-        RAISE demo_expired;
-    END IF;
-    
-    RETURN 'Demo is current. Expires: ' || v_expiration_date || ' (' || v_days_remaining || ' days remaining)';
-END;
-$$;
+SELECT 
+    '2025-12-31'::DATE AS expiration_date,
+    CURRENT_DATE() AS current_date,
+    DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) AS days_remaining,
+    CASE 
+        WHEN DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) < 0 
+        THEN '🚫 EXPIRED - Do not deploy. Fork repository and update expiration date.'
+        WHEN DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) <= 7
+        THEN '⚠️  EXPIRING SOON - ' || DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) || ' days remaining'
+        ELSE '✅ ACTIVE - ' || DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) || ' days remaining'
+    END AS demo_status;
+
+-- ⚠️  MANUAL CHECK REQUIRED:
+-- If the demo_status shows "EXPIRED", STOP HERE and do not proceed with deployment.
+-- This demo uses Snowflake features current as of December 2025.
+-- To use after expiration:
+--   1. Fork: https://github.com/sfc-gh-miwhitaker/dataquality
+--   2. Update expiration_date in this file
+--   3. Review/update for latest Snowflake syntax and features
 
 -- ============================================================================
 -- SECTION 1: Git Integration Setup

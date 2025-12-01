@@ -43,7 +43,7 @@ If you prefer to deploy manually:
 2. `sql/01_setup/` - Run setup scripts in order
 3. `sql/02_data/` - Create tables and load sample data
 4. `sql/03_transformations/` - Create views and dynamic tables
-5. `sql/04_cortex/` - Set up DMF associations
+5. `sql/04_data_quality/` - Set up DMF associations
 6. `sql/05_streamlit/` - Deploy Streamlit dashboard
 7. `docs/02-USAGE.md` - Learn how to use the demo
 
