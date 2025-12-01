@@ -44,9 +44,9 @@ CREATE OR REPLACE TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS (
     agent_email         VARCHAR(255),
     agent_phone         VARCHAR(50),
     created_at          TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    updated_at          TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    COMMENT = 'DEMO: Raw property listings with intentional quality issues for DMF demonstration | Author: SE Community | Expires: 2025-12-31'
-);
+    updated_at          TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
+)
+COMMENT = 'DEMO: Raw property listings with intentional quality issues for DMF demonstration | Author: SE Community | Expires: 2025-12-31';
 
 -- ============================================================================
 -- STAGING LAYER TABLES
@@ -69,9 +69,9 @@ CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_PROPERTY_LISTINGS (
     listing_date        DATE,
     is_valid            BOOLEAN             DEFAULT TRUE,
     validation_notes    VARCHAR(1000),
-    processed_at        TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    COMMENT = 'DEMO: Cleaned and validated property listings | Author: SE Community | Expires: 2025-12-31'
-);
+    processed_at        TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
+)
+COMMENT = 'DEMO: Cleaned and validated property listings | Author: SE Community | Expires: 2025-12-31';
 
 -- Market metrics aggregation table
 CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_MARKET_METRICS (
@@ -86,9 +86,9 @@ CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_MARKET_METRICS (
     avg_sqft            NUMBER(10,0),
     price_per_sqft      NUMBER(10,2),
     calculated_at       TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    PRIMARY KEY (market_area, metric_month),
-    COMMENT = 'DEMO: Monthly market metrics by area | Author: SE Community | Expires: 2025-12-31'
-);
+    PRIMARY KEY (market_area, metric_month)
+)
+COMMENT = 'DEMO: Monthly market metrics by area | Author: SE Community | Expires: 2025-12-31';
 
 -- ============================================================================
 -- ANALYTICS LAYER TABLES
@@ -105,9 +105,9 @@ CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS (
     threshold_value     NUMBER(38,0),
     is_passing          BOOLEAN,
     scheduled_time      TIMESTAMP_NTZ,
-    execution_time      TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    COMMENT = 'DEMO: Storage for DMF execution results | Author: SE Community | Expires: 2025-12-31'
-);
+    execution_time      TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
+)
+COMMENT = 'DEMO: Storage for DMF execution results | Author: SE Community | Expires: 2025-12-31';
 
 -- Remediation action audit log
 CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG (
@@ -119,9 +119,9 @@ CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG (
     records_affected    NUMBER(38,0),
     remediated_by       VARCHAR(255)        DEFAULT CURRENT_USER(),
     remediated_at       TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
-    notes               VARCHAR(2000),
-    COMMENT = 'DEMO: Audit trail for data quality remediation actions | Author: SE Community | Expires: 2025-12-31'
-);
+    notes               VARCHAR(2000)
+)
+COMMENT = 'DEMO: Audit trail for data quality remediation actions | Author: SE Community | Expires: 2025-12-31';
 
 -- Verify table creation
 SELECT 'RAW Tables' AS layer, COUNT(*) AS table_count 

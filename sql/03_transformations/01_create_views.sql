@@ -150,5 +150,13 @@ ORDER BY listing_month DESC, market_area
 COMMENT = 'DEMO: Monthly market metrics summary | Author: SE Community | Expires: 2025-12-31';
 
 -- Verify view creation
-SHOW VIEWS IN SCHEMA SFE_ANALYTICS_REALESTATE;
+-- Note: SHOW VIEWS doesn't work in EXECUTE IMMEDIATE context
+-- To verify manually: SHOW VIEWS IN SCHEMA SFE_ANALYTICS_REALESTATE;
+
+SELECT 
+    TABLE_NAME AS view_name,
+    CREATED
+FROM INFORMATION_SCHEMA.VIEWS
+WHERE TABLE_SCHEMA = 'SFE_ANALYTICS_REALESTATE'
+ORDER BY CREATED DESC;
 

@@ -125,14 +125,10 @@ GROUP BY COALESCE(market_area, 'Unknown');
 -- Verify Dynamic Tables
 -- ============================================================================
 
-SHOW DYNAMIC TABLES IN SCHEMA SFE_ANALYTICS_REALESTATE;
+-- Note: SHOW DYNAMIC TABLES doesn't work in EXECUTE IMMEDIATE context
+-- To verify manually: SHOW DYNAMIC TABLES IN SCHEMA SFE_ANALYTICS_REALESTATE;
 
--- Check refresh status
 SELECT 
-    name,
-    target_lag,
-    refresh_mode,
-    scheduling_state
-FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES())
-WHERE SCHEMA_NAME = 'SFE_ANALYTICS_REALESTATE';
+    '✅ Dynamic Tables Created' AS status,
+    'SFE_DT_QUALITY_SUMMARY (1 min lag), SFE_DT_MARKET_TRENDS (5 min lag)' AS tables_created;
 

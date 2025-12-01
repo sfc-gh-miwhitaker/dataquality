@@ -37,11 +37,11 @@ CREATE OR REPLACE STREAMLIT SFE_DATA_QUALITY_DASHBOARD
 -- Verify Streamlit Deployment
 -- ============================================================================
 
-SHOW STREAMLITS IN SCHEMA SFE_ANALYTICS_REALESTATE;
+-- Note: SHOW STREAMLITS doesn't work in EXECUTE IMMEDIATE context
+-- To verify manually: SHOW STREAMLITS IN SCHEMA SFE_ANALYTICS_REALESTATE;
 
--- Display access information
 SELECT 
-    'Streamlit App Deployed!' AS status,
+    '✅ Streamlit App Deployed!' AS status,
     'SFE_DATA_QUALITY_DASHBOARD' AS app_name,
     'Navigate to: Apps > Streamlit > SFE_DATA_QUALITY_DASHBOARD' AS access_instructions;
 
