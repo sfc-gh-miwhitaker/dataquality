@@ -23,7 +23,9 @@ USE DATABASE SNOWFLAKE_EXAMPLE;
 -- Main view powering the Streamlit dashboard
 -- ============================================================================
 
-CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_QUALITY_DASHBOARD AS
+CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_QUALITY_DASHBOARD
+COMMENT = 'DEMO: Aggregated quality metrics for dashboard | Author: SE Community | Expires: 2025-12-31'
+AS
 WITH quality_metrics AS (
     SELECT
         -- Total counts
@@ -86,14 +88,15 @@ SELECT
      
     CURRENT_TIMESTAMP() AS calculated_at
     
-FROM quality_metrics
-COMMENT = 'DEMO: Aggregated quality metrics for dashboard | Author: SE Community | Expires: 2025-12-31';
+FROM quality_metrics;
 
 -- ============================================================================
 -- Property Quality Scores by Market Area
 -- ============================================================================
 
-CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_PROPERTY_QUALITY_SCORES AS
+CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_PROPERTY_QUALITY_SCORES
+COMMENT = 'DEMO: Quality scores by market area | Author: SE Community | Expires: 2025-12-31'
+AS
 SELECT
     COALESCE(market_area, 'Unknown') AS market_area,
     COUNT(*) AS total_listings,
@@ -121,14 +124,15 @@ SELECT
     
 FROM SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
 GROUP BY COALESCE(market_area, 'Unknown')
-ORDER BY quality_score ASC
-COMMENT = 'DEMO: Quality scores by market area | Author: SE Community | Expires: 2025-12-31';
+ORDER BY quality_score ASC;
 
 -- ============================================================================
 -- Market Summary View
 -- ============================================================================
 
-CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_MARKET_SUMMARY AS
+CREATE OR REPLACE VIEW SFE_ANALYTICS_REALESTATE.SFE_V_MARKET_SUMMARY
+COMMENT = 'DEMO: Monthly market metrics summary | Author: SE Community | Expires: 2025-12-31'
+AS
 SELECT
     COALESCE(market_area, 'Unknown') AS market_area,
     DATE_TRUNC('month', listing_date) AS listing_month,
@@ -146,8 +150,7 @@ WHERE price IS NOT NULL
 GROUP BY 
     COALESCE(market_area, 'Unknown'),
     DATE_TRUNC('month', listing_date)
-ORDER BY listing_month DESC, market_area
-COMMENT = 'DEMO: Monthly market metrics summary | Author: SE Community | Expires: 2025-12-31';
+ORDER BY listing_month DESC, market_area;
 
 -- Verify view creation
 -- Note: SHOW VIEWS doesn't work in EXECUTE IMMEDIATE context
