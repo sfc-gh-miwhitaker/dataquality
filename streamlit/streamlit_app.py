@@ -53,7 +53,7 @@ with st.sidebar:
     # Refresh button
     if st.button("🔄 Refresh Data", use_container_width=True):
         st.cache_data.clear()
-        st.rerun()
+        st.experimental_rerun()
     
     st.markdown("---")
     
