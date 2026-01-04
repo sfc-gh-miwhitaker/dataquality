@@ -43,6 +43,21 @@ This demo expired on its 30-day lifecycle date.
 Contact your Snowflake Solutions Engineer or visit:
 - [Snowflake Documentation](https://docs.snowflake.com)
 - [Quickstarts](https://quickstarts.snowflake.com)
+# EXPIRED DEMONSTRATION PROJECT
+
+This demo expired on its 30-day lifecycle date.
+
+**Status:** Archived and made private
+
+**Reason for Expiration:**
+- Snowflake features evolve rapidly
+- Syntax and best practices may be outdated
+- Demo designed for specific meeting/use case
+
+**For Current Snowflake Demos:**
+Contact your Snowflake Solutions Engineer or visit:
+- [Snowflake Documentation](https://docs.snowflake.com)
+- [Quickstarts](https://quickstarts.snowflake.com)
 ![Reference Implementation](https://img.shields.io/badge/Reference-Implementation-blue)
 ![Ready to Run](https://img.shields.io/badge/Ready%20to%20Run-Yes-green)
 ![Expires](https://img.shields.io/badge/Expires-2025--12--31-orange)
