@@ -5,9 +5,7 @@ on:
     - cron: "17 3 * * *"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  administration: write
+permissions: write-all
 
 jobs:
   expire:
