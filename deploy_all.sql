@@ -2,45 +2,44 @@
  * DEMO METADATA (Machine-readable - Do not modify format)
  * PROJECT_NAME: Data Quality Metrics Demo
  * AUTHOR: SE Community
- * CREATED: 2025-12-01
- * EXPIRES: 2025-12-31
- * GITHUB_REPO: https://github.com/sfc-gh-miwhitaker/dataquality
+ * CREATED: 2026-01-06
+ * EXPIRES: 2026-02-05
  * PURPOSE: Data quality monitoring, validation, and reporting for real estate analytics
- * 
+ *
  * DEPLOYMENT INSTRUCTIONS:
  * 1. Open Snowsight (https://app.snowflake.com)
  * 2. Copy this ENTIRE script
  * 3. Paste into a new SQL worksheet
  * 4. Click "Run All" (or press Cmd/Ctrl + Shift + Enter)
  * 5. Monitor output for any errors
- * 
+ *
  * This script creates all necessary Snowflake objects by pulling SQL files
  * from the GitHub repository using native Git integration.
- * 
+ *
  ******************************************************************************/
 
 -- ============================================================================
 -- SECTION 0: Expiration Check
--- Last Updated: 2025-12-01
+-- Last Updated: 2026-01-06
 -- ============================================================================
 -- This demo expires 30 days after creation.
 -- If expired, deployment should be halted and the repository forked with updated dates.
 
-SELECT 
-    '2025-12-31'::DATE AS expiration_date,
+SELECT
+    '2026-02-05'::DATE AS expiration_date,
     CURRENT_DATE() AS current_date,
-    DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) AS days_remaining,
-    CASE 
-        WHEN DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) < 0 
-        THEN '🚫 EXPIRED - Do not deploy. Fork repository and update expiration date.'
-        WHEN DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) <= 7
-        THEN '⚠️  EXPIRING SOON - ' || DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) || ' days remaining'
-        ELSE '✅ ACTIVE - ' || DATEDIFF('day', CURRENT_DATE(), '2025-12-31'::DATE) || ' days remaining'
+    DATEDIFF('day', CURRENT_DATE(), '2026-02-05'::DATE) AS days_remaining,
+    CASE
+        WHEN DATEDIFF('day', CURRENT_DATE(), '2026-02-05'::DATE) < 0
+        THEN 'EXPIRED - Do not deploy. Fork repository and update expiration date.'
+        WHEN DATEDIFF('day', CURRENT_DATE(), '2026-02-05'::DATE) <= 7
+        THEN 'EXPIRING SOON - ' || DATEDIFF('day', CURRENT_DATE(), '2026-02-05'::DATE) || ' days remaining'
+        ELSE 'ACTIVE - ' || DATEDIFF('day', CURRENT_DATE(), '2026-02-05'::DATE) || ' days remaining'
     END AS demo_status;
 
--- ⚠️  MANUAL CHECK REQUIRED:
+-- MANUAL CHECK REQUIRED:
 -- If the demo_status shows "EXPIRED", STOP HERE and do not proceed with deployment.
--- This demo uses Snowflake features current as of December 2025.
+-- This demo uses Snowflake features current as of January 2026.
 -- To use after expiration:
 --   1. Fork: https://github.com/sfc-gh-miwhitaker/dataquality
 --   2. Update expiration_date in this file
@@ -55,7 +54,7 @@ CREATE OR REPLACE API INTEGRATION SFE_DATAQUALITY_GIT_API_INTEGRATION
     API_PROVIDER = git_https_api
     API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-miwhitaker/')
     ENABLED = TRUE
-    COMMENT = 'DEMO: Data Quality Metrics Demo - Git integration for public repo access | Author: SE Community | Expires: 2025-12-31';
+    COMMENT = 'DEMO: Data Quality Metrics Demo - Git integration for public repo access | Author: SE Community | Expires: 2026-02-05';
 
 -- ============================================================================
 -- SECTION 2: Database and Schema Setup
@@ -65,21 +64,21 @@ CREATE OR REPLACE API INTEGRATION SFE_DATAQUALITY_GIT_API_INTEGRATION
 CREATE DATABASE IF NOT EXISTS SNOWFLAKE_EXAMPLE
     COMMENT = 'DEMO: Repository for example/demo projects - NOT FOR PRODUCTION | Author: SE Community';
 
--- Create schema for Git repository
-CREATE SCHEMA IF NOT EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS
-    COMMENT = 'DEMO: Data Quality Metrics Demo - Git repositories and deployment objects | Author: SE Community | Expires: 2025-12-31';
+-- Create shared schema for Git repositories (shared infrastructure across demos)
+CREATE SCHEMA IF NOT EXISTS SNOWFLAKE_EXAMPLE.GIT_REPOS
+    COMMENT = 'DEMO: Shared Git repository objects for Snowflake-native deployments - NOT FOR PRODUCTION | Author: SE Community';
 
 -- Create Git Repository stage
-CREATE OR REPLACE GIT REPOSITORY SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo
+CREATE OR REPLACE GIT REPOSITORY SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO
     API_INTEGRATION = SFE_DATAQUALITY_GIT_API_INTEGRATION
     ORIGIN = 'https://github.com/sfc-gh-miwhitaker/dataquality'
-    COMMENT = 'DEMO: Data Quality Metrics Demo - Source repository for deployment scripts | Author: SE Community | Expires: 2025-12-31';
+    COMMENT = 'DEMO: Data Quality Metrics Demo - Source repository for deployment scripts | Author: SE Community | Expires: 2026-02-05';
 
 -- Fetch latest from repository
-ALTER GIT REPOSITORY SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo FETCH;
+ALTER GIT REPOSITORY SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO FETCH;
 
 -- Verify Git repository is accessible
-SHOW GIT BRANCHES IN SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo;
+SHOW GIT BRANCHES IN SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO;
 
 -- ============================================================================
 -- SECTION 3: Warehouse Setup
@@ -91,51 +90,51 @@ CREATE WAREHOUSE IF NOT EXISTS SFE_DATAQUALITY_WH
     AUTO_SUSPEND = 60
     AUTO_RESUME = TRUE
     INITIALLY_SUSPENDED = TRUE
-    COMMENT = 'DEMO: Data Quality Metrics Demo - Dedicated compute for demo workloads | Author: SE Community | Expires: 2025-12-31';
+    COMMENT = 'DEMO: Data Quality Metrics Demo - Dedicated compute for demo workloads | Author: SE Community | Expires: 2026-02-05';
 
 -- Set warehouse context for all subsequent operations
 USE WAREHOUSE SFE_DATAQUALITY_WH;
 
 -- ============================================================================
 -- SECTION 4: Execute Deployment Scripts from Git
--- 
+--
 -- Pattern: EXECUTE IMMEDIATE FROM @database.schema.git_repo/branches/main/path/to/file.sql
 -- ============================================================================
 
 -- 4.1 Setup Scripts
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/01_setup/01_create_database.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/01_setup/02_create_schemas.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/01_setup/01_create_database.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/01_setup/02_create_schemas.sql;
 
 -- 4.2 Data Scripts
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/02_data/01_create_tables.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/02_data/02_load_sample_data.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/02_data/01_create_tables.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/02_data/02_load_sample_data.sql;
 
 -- 4.3 Transformation Scripts
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/03_transformations/01_create_views.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/03_transformations/02_create_dynamic_tables.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/03_transformations/01_create_views.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/03_transformations/02_create_dynamic_tables.sql;
 
 -- 4.4 Data Quality Scripts
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/04_data_quality/01_associate_dmfs.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/04_data_quality/01_associate_dmfs.sql;
 
 -- 4.5 Streamlit Deployment
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/05_streamlit/01_create_dashboard.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/05_streamlit/01_create_dashboard.sql;
 
 -- ============================================================================
 -- DEPLOYMENT COMPLETE
 -- ============================================================================
 
-SELECT 
-    '✅ Deployment Complete!' AS status,
+SELECT
+    'Deployment Complete' AS status,
     'Demo: Data Quality Metrics Demo' AS project,
-    'Expires: 2025-12-31' AS expiration,
-    'Next: Open Streamlit Apps > SFE_DATA_QUALITY_DASHBOARD' AS next_steps;
+    'Expires: 2026-02-05' AS expiration,
+    'Next: Open Streamlit Apps > DATA_QUALITY_DASHBOARD' AS next_steps;
 
 -- Show created objects for verification
 SHOW DATABASES LIKE 'SNOWFLAKE_EXAMPLE';
-SHOW SCHEMAS LIKE 'SFE_%' IN DATABASE SNOWFLAKE_EXAMPLE;
-SHOW TABLES IN DATABASE SNOWFLAKE_EXAMPLE;
-SHOW DYNAMIC TABLES IN DATABASE SNOWFLAKE_EXAMPLE;
-SHOW STREAMLITS IN DATABASE SNOWFLAKE_EXAMPLE;
+SHOW SCHEMAS LIKE 'DATAQUALITY_%' IN DATABASE SNOWFLAKE_EXAMPLE;
+SHOW TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
+SHOW DYNAMIC TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
+SHOW STREAMLITS IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
 
 /*******************************************************************************
  * TROUBLESHOOTING
@@ -148,5 +147,4 @@ SHOW STREAMLITS IN DATABASE SNOWFLAKE_EXAMPLE;
 -- 4. Check README.md for additional troubleshooting steps
 --
 -- To clean up all objects created by this demo:
--- EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/99_cleanup/teardown_all.sql;
-
+-- EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/99_cleanup/teardown_all.sql;

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * DEMO: Data Quality Metrics Demo
  * Script: Create Tables
- * 
+ *
  * PURPOSE:
  *   Creates all tables for the data quality demo including:
  *   - Raw property listings (with intentional quality issues)
@@ -9,25 +9,26 @@
  *   - Market metrics aggregations
  *   - Data quality metric results
  *   - Remediation audit log
- * 
+ *
  * OBJECTS CREATED:
- *   - SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
- *   - SFE_STG_REALESTATE.SFE_STG_PROPERTY_LISTINGS
- *   - SFE_STG_REALESTATE.SFE_STG_MARKET_METRICS
- *   - SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS
- *   - SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG
- * 
- * Author: SE Community | Expires: 2025-12-31
+ *   - DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
+ *   - DATAQUALITY_METRICS.STG_PROPERTY_LISTINGS
+ *   - DATAQUALITY_METRICS.STG_MARKET_METRICS
+ *   - DATAQUALITY_METRICS.DQ_METRIC_RESULTS
+ *   - DATAQUALITY_METRICS.DQ_REMEDIATION_LOG
+ *
+ * Author: SE Community | Expires: 2026-02-05
  ******************************************************************************/
 
 USE DATABASE SNOWFLAKE_EXAMPLE;
+USE SCHEMA DATAQUALITY_METRICS;
 
 -- ============================================================================
 -- RAW LAYER TABLES
 -- ============================================================================
 
 -- Raw property listings table (landing zone with quality issues)
-CREATE OR REPLACE TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS (
+CREATE OR REPLACE TABLE RAW_PROPERTY_LISTINGS (
     listing_id          NUMBER(38,0)        NOT NULL,
     address             VARCHAR(500),
     city                VARCHAR(100),
@@ -46,14 +47,14 @@ CREATE OR REPLACE TABLE SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS (
     created_at          TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
     updated_at          TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
 )
-COMMENT = 'DEMO: Raw property listings with intentional quality issues for DMF demonstration | Author: SE Community | Expires: 2025-12-31';
+COMMENT = 'DEMO: Raw property listings with intentional quality issues for DMF demonstration | Author: SE Community | Expires: 2026-02-05';
 
 -- ============================================================================
 -- STAGING LAYER TABLES
 -- ============================================================================
 
 -- Staged/cleaned property listings
-CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_PROPERTY_LISTINGS (
+CREATE OR REPLACE TABLE STG_PROPERTY_LISTINGS (
     listing_id          NUMBER(38,0)        NOT NULL PRIMARY KEY,
     address_clean       VARCHAR(500)        NOT NULL,
     city                VARCHAR(100)        NOT NULL,
@@ -71,10 +72,10 @@ CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_PROPERTY_LISTINGS (
     validation_notes    VARCHAR(1000),
     processed_at        TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
 )
-COMMENT = 'DEMO: Cleaned and validated property listings | Author: SE Community | Expires: 2025-12-31';
+COMMENT = 'DEMO: Cleaned and validated property listings | Author: SE Community | Expires: 2026-02-05';
 
 -- Market metrics aggregation table
-CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_MARKET_METRICS (
+CREATE OR REPLACE TABLE STG_MARKET_METRICS (
     market_area         VARCHAR(100)        NOT NULL,
     metric_month        DATE                NOT NULL,
     avg_price           NUMBER(15,2),
@@ -88,14 +89,14 @@ CREATE OR REPLACE TABLE SFE_STG_REALESTATE.SFE_STG_MARKET_METRICS (
     calculated_at       TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
     PRIMARY KEY (market_area, metric_month)
 )
-COMMENT = 'DEMO: Monthly market metrics by area | Author: SE Community | Expires: 2025-12-31';
+COMMENT = 'DEMO: Monthly market metrics by area | Author: SE Community | Expires: 2026-02-05';
 
 -- ============================================================================
 -- ANALYTICS LAYER TABLES
 -- ============================================================================
 
 -- Data quality metric results storage
-CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS (
+CREATE OR REPLACE TABLE DQ_METRIC_RESULTS (
     result_id           NUMBER(38,0)        AUTOINCREMENT PRIMARY KEY,
     table_name          VARCHAR(255)        NOT NULL,
     column_name         VARCHAR(255)        NOT NULL,
@@ -107,10 +108,10 @@ CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS (
     scheduled_time      TIMESTAMP_NTZ,
     execution_time      TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP()
 )
-COMMENT = 'DEMO: Storage for DMF execution results | Author: SE Community | Expires: 2025-12-31';
+COMMENT = 'DEMO: Storage for DMF execution results | Author: SE Community | Expires: 2026-02-05';
 
 -- Remediation action audit log
-CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG (
+CREATE OR REPLACE TABLE DQ_REMEDIATION_LOG (
     log_id              NUMBER(38,0)        AUTOINCREMENT PRIMARY KEY,
     result_id           NUMBER(38,0),
     table_name          VARCHAR(255),
@@ -121,18 +122,9 @@ CREATE OR REPLACE TABLE SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG (
     remediated_at       TIMESTAMP_NTZ       DEFAULT CURRENT_TIMESTAMP(),
     notes               VARCHAR(2000)
 )
-COMMENT = 'DEMO: Audit trail for data quality remediation actions | Author: SE Community | Expires: 2025-12-31';
+COMMENT = 'DEMO: Audit trail for data quality remediation actions | Author: SE Community | Expires: 2026-02-05';
 
 -- Verify table creation
-SELECT 'RAW Tables' AS layer, COUNT(*) AS table_count 
-FROM INFORMATION_SCHEMA.TABLES 
-WHERE TABLE_SCHEMA = 'SFE_RAW_REALESTATE'
-UNION ALL
-SELECT 'STG Tables', COUNT(*) 
-FROM INFORMATION_SCHEMA.TABLES 
-WHERE TABLE_SCHEMA = 'SFE_STG_REALESTATE'
-UNION ALL
-SELECT 'ANALYTICS Tables', COUNT(*) 
-FROM INFORMATION_SCHEMA.TABLES 
-WHERE TABLE_SCHEMA = 'SFE_ANALYTICS_REALESTATE';
-
+SELECT 'Tables' AS layer, COUNT(*) AS table_count
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = 'DATAQUALITY_METRICS';

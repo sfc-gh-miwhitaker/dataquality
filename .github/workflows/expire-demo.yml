@@ -1,71 +1,70 @@
-name: Demo Expiration Check
+name: Expire Demo Repository
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Daily check at midnight UTC
+    - cron: "17 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  administration: write
+
 jobs:
-  check-expiration:
+  expire:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Check if demo expired
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read expiration from deploy_all.sql
+        id: expiry
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import re
+          import sys
+
+          text = pathlib.Path("deploy_all.sql").read_text(encoding="utf-8")
+          m = re.search(r"^\\s*\\*\\s*EXPIRES:\\s*(\\d{4}-\\d{2}-\\d{2})\\s*$", text, flags=re.M)
+          if not m:
+            print("ERROR: Could not find a line like '* EXPIRES: YYYY-MM-DD' in deploy_all.sql", file=sys.stderr)
+            sys.exit(1)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+            f.write(f"expires={m.group(1)}\\n")
+          PY
+
+      - name: Determine whether repository is expired
         id: check
         run: |
-          EXPIRE_DATE="2025-12-31"  # Last updated: 2025-12-01
-          TODAY=$(date +%Y-%m-%d)
-          
-          if [[ "$TODAY" > "$EXPIRE_DATE" ]]; then
-            echo "expired=true" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          TODAY="$(date -u +%F)"
+          EXPIRES="${{ steps.expiry.outputs.expires }}"
+          echo "today=$TODAY" >> "$GITHUB_OUTPUT"
+          echo "expires=$EXPIRES" >> "$GITHUB_OUTPUT"
+          if [[ "$TODAY" > "$EXPIRES" ]]; then
+            echo "expired=true" >> "$GITHUB_OUTPUT"
           else
-            echo "expired=false" >> $GITHUB_OUTPUT
+            echo "expired=false" >> "$GITHUB_OUTPUT"
           fi
-      
-      - name: Update README with expiration notice
-        if: steps.check.outputs.expired == 'true'
-        run: |
-          cat > EXPIRED_NOTICE.md << 'EOF'
-          # EXPIRED DEMONSTRATION PROJECT
-          
-          This demo expired on its 30-day lifecycle date.
-          
-          **Status:** Archived and made private
-          
-          **Reason for Expiration:**
-          - Snowflake features evolve rapidly
-          - Syntax and best practices may be outdated
-          - Demo designed for specific meeting/use case
-          
-          **For Current Snowflake Demos:**
-          Contact your Snowflake Solutions Engineer or visit:
-          - [Snowflake Documentation](https://docs.snowflake.com)
-          - [Quickstarts](https://quickstarts.snowflake.com)
-          EOF
-          
-          mv README.md README_ORIGINAL.md
-          cat EXPIRED_NOTICE.md README_ORIGINAL.md > README.md
-          git config user.name "Demo Expiration Bot"
-          git config user.email "se-community@snowflake.example"
-          git add README.md
-          git commit -m "chore: mark demo as expired"
-          git push
-      
-      - name: Archive and make private
-        if: steps.check.outputs.expired == 'true'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.repos.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              description: 'EXPIRED DEMO - Contact Snowflake SE for current versions',
-              archived: true,
-              private: true
-            });
 
+      - name: Archive repository (expired)
+        if: steps.check.outputs.expired == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            core.info(`Repository expired. Archiving ${owner}/${repo}...`);
+            await github.rest.repos.update({ owner, repo, archived: true });
+
+      - name: Make repository private (expired)
+        if: steps.check.outputs.expired == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            core.info(`Repository expired. Making ${owner}/${repo} private...`);
+            await github.rest.repos.update({ owner, repo, private: true });

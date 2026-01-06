@@ -1,8 +1,8 @@
 # Deployment Guide - Data Quality Metrics Demo
 
-Author: SE Community  
-Last Updated: 2025-12-01  
-Expires: 2025-12-31 (30 days from creation)
+Author: SE Community
+Last Updated: 2026-01-06
+Expires: 2026-02-05 (30 days from creation)
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 
@@ -56,16 +56,16 @@ Paste the script into your worksheet and click **Run All** (or Ctrl/Cmd + Shift 
 ### Step 5: Monitor Progress
 
 Watch the output pane for:
-- ✅ Git repository created
-- ✅ Database and schemas created
-- ✅ Tables created and populated
-- ✅ DMF associations configured
-- ✅ Dynamic tables created
-- ✅ Streamlit dashboard deployed
+- Git repository created
+- Database and schema created
+- Tables created and populated
+- DMF associations configured
+- Dynamic tables created
+- Streamlit dashboard deployed
 
 ### Step 6: Access Dashboard
 
-Navigate to **Apps** > **Streamlit** > **SFE_DATA_QUALITY_DASHBOARD**
+Navigate to **Apps** > **Streamlit** > **DATA_QUALITY_DASHBOARD**
 
 ---
 
@@ -86,9 +86,9 @@ CREATE OR REPLACE API INTEGRATION SFE_DATAQUALITY_GIT_API_INTEGRATION
 
 ```sql
 CREATE DATABASE IF NOT EXISTS SNOWFLAKE_EXAMPLE;
-CREATE SCHEMA IF NOT EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS;
+CREATE SCHEMA IF NOT EXISTS SNOWFLAKE_EXAMPLE.GIT_REPOS;
 
-CREATE OR REPLACE GIT REPOSITORY SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo
+CREATE OR REPLACE GIT REPOSITORY SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO
   API_INTEGRATION = SFE_DATAQUALITY_GIT_API_INTEGRATION
   ORIGIN = 'https://github.com/sfc-gh-miwhitaker/dataquality';
 ```
@@ -107,34 +107,34 @@ USE WAREHOUSE SFE_DATAQUALITY_WH;
 ### Step 4: Execute Setup Scripts
 
 ```sql
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/01_setup/01_create_database.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/01_setup/02_create_schemas.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/01_setup/01_create_database.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/01_setup/02_create_schemas.sql;
 ```
 
 ### Step 5: Execute Data Scripts
 
 ```sql
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/02_data/01_create_tables.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/02_data/02_load_sample_data.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/02_data/01_create_tables.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/02_data/02_load_sample_data.sql;
 ```
 
 ### Step 6: Execute Transformation Scripts
 
 ```sql
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/03_transformations/01_create_views.sql;
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/03_transformations/02_create_dynamic_tables.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/03_transformations/01_create_views.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/03_transformations/02_create_dynamic_tables.sql;
 ```
 
 ### Step 7: Configure DMFs
 
 ```sql
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/04_data_quality/01_associate_dmfs.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/04_data_quality/01_associate_dmfs.sql;
 ```
 
 ### Step 8: Deploy Streamlit
 
 ```sql
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/05_streamlit/01_create_dashboard.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/05_streamlit/01_create_dashboard.sql;
 ```
 
 ---
@@ -148,18 +148,16 @@ After deployment, verify the installation:
 SHOW SCHEMAS IN DATABASE SNOWFLAKE_EXAMPLE;
 
 -- Check tables created
-SHOW TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE;
-SHOW TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.SFE_STG_REALESTATE;
-SHOW TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE;
+SHOW TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
 
 -- Check dynamic tables
-SHOW DYNAMIC TABLES IN DATABASE SNOWFLAKE_EXAMPLE;
+SHOW DYNAMIC TABLES IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
 
 -- Check Streamlit app
-SHOW STREAMLITS IN DATABASE SNOWFLAKE_EXAMPLE;
+SHOW STREAMLITS IN SCHEMA SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS;
 
 -- Verify sample data
-SELECT COUNT(*) FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS;
+SELECT COUNT(*) FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS;
 -- Expected: ~50,000 rows
 ```
 
@@ -201,7 +199,7 @@ Initial refresh may take a few minutes.
 
 **Solution:** Manually trigger refresh:
 ```sql
-ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_QUALITY_SUMMARY REFRESH;
+ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_QUALITY_SUMMARY REFRESH;
 ```
 
 ---
@@ -215,6 +213,3 @@ After successful deployment:
 3. **Clean Up When Done** - `docs/03-CLEANUP.md`
 
 ---
-
-*Generated by builddemo | SE Community | 2025-12-01*
-

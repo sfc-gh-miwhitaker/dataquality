@@ -1,39 +1,38 @@
 /*******************************************************************************
  * DEMO: Data Quality Metrics Demo
  * Script: Teardown All Objects
- * 
+ *
  * PURPOSE:
  *   Removes all objects created by this demo project.
  *   Preserves the SNOWFLAKE_EXAMPLE database and shared infrastructure.
- * 
+ *
  * OBJECTS DROPPED:
- *   - SFE_RAW_REALESTATE schema (cascade)
- *   - SFE_STG_REALESTATE schema (cascade)
- *   - SFE_ANALYTICS_REALESTATE schema (cascade)
- *   - DATAQUALITY_GIT_REPOS schema (cascade)
+ *   - DATAQUALITY_METRICS schema (cascade)
+ *   - SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO (Git repository object)
  *   - SFE_DATAQUALITY_WH warehouse
  *   - SFE_DATAQUALITY_GIT_API_INTEGRATION (if not shared)
- * 
+ *
  * PRESERVED:
  *   - SNOWFLAKE_EXAMPLE database
- *   - Other SFE_* schemas from other demos
+ *   - SNOWFLAKE_EXAMPLE.GIT_REPOS schema (shared infrastructure)
+ *   - Other demo schemas
  *   - Shared API integrations (if used by other projects)
- * 
- * Author: SE Community | Expires: 2025-12-31
+ *
+ * Author: SE Community | Expires: 2026-02-05
  ******************************************************************************/
 
 -- ============================================================================
 -- Step 1: Drop Streamlit App (must be done before schema drop)
 -- ============================================================================
 
-DROP STREAMLIT IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DATA_QUALITY_DASHBOARD;
+DROP STREAMLIT IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DATA_QUALITY_DASHBOARD;
 
 -- ============================================================================
 -- Step 2: Drop Dynamic Tables (to cleanly stop refresh tasks)
 -- ============================================================================
 
-DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_QUALITY_SUMMARY;
-DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_MARKET_TRENDS;
+DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_QUALITY_SUMMARY;
+DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_MARKET_TRENDS;
 
 -- ============================================================================
 -- Step 3: Remove DMF Associations (before dropping tables)
@@ -47,17 +46,11 @@ DROP DYNAMIC TABLE IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_M
 -- Step 4: Drop Project Schemas (CASCADE drops all contained objects)
 -- ============================================================================
 
--- Raw layer schema
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE CASCADE;
+-- Project schema
+DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS CASCADE;
 
--- Staging layer schema
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_STG_REALESTATE CASCADE;
-
--- Analytics layer schema
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE CASCADE;
-
--- Git repository schema
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS CASCADE;
+-- Git repository object (do not drop the shared schema)
+DROP GIT REPOSITORY IF EXISTS SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO;
 
 -- ============================================================================
 -- Step 5: Drop Warehouse
@@ -82,7 +75,7 @@ DROP API INTEGRATION IF EXISTS SFE_DATAQUALITY_GIT_API_INTEGRATION;
 -- Verify schemas removed
 SELECT 'Remaining Schemas' AS check_type, SCHEMA_NAME
 FROM SNOWFLAKE_EXAMPLE.INFORMATION_SCHEMA.SCHEMATA
-WHERE SCHEMA_NAME LIKE 'SFE_%REALESTATE%'
+WHERE SCHEMA_NAME = 'DATAQUALITY_METRICS'
    OR SCHEMA_NAME LIKE 'DATAQUALITY%';
 
 -- Note: SHOW commands don't work in EXECUTE IMMEDIATE context
@@ -90,7 +83,7 @@ WHERE SCHEMA_NAME LIKE 'SFE_%REALESTATE%'
 --   SHOW WAREHOUSES LIKE 'SFE_DATAQUALITY%';
 --   SHOW API INTEGRATIONS LIKE 'SFE_DATAQUALITY%';
 
-SELECT 
+SELECT
     'Cleanup verification' AS check_type,
     'SFE_DATAQUALITY_WH' AS warehouse_dropped,
     'SFE_DATAQUALITY_GIT_API_INTEGRATION' AS api_integration_dropped;
@@ -99,8 +92,7 @@ SELECT
 -- Cleanup Complete
 -- ============================================================================
 
-SELECT 
-    '✅ Cleanup Complete!' AS status,
+SELECT
+    'Cleanup Complete' AS status,
     'All Data Quality Metrics Demo objects have been removed.' AS message,
     'SNOWFLAKE_EXAMPLE database preserved for other demos.' AS note;
-

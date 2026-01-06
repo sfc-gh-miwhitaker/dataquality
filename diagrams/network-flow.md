@@ -1,13 +1,13 @@
 # Network Flow - Data Quality Metrics Demo
 
-Author: SE Community  
-Last Updated: 2025-12-01  
-Expires: 2025-12-31 (30 days from creation)  
+Author: SE Community
+Last Updated: 2026-01-06
+Expires: 2026-02-05 (30 days from creation)
 Status: Reference Implementation
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 
-**Reference Implementation:** This code demonstrates production-grade architectural patterns and best practices. Review and customize security, networking, and logic for your organization's specific requirements before deployment.
+**Reference Implementation:** This code demonstrates production-grade architectural patterns and best practices. Review and customize security, networking, and logic for your organization's specific requirements before deployment. Not for production use.
 
 ## Overview
 
@@ -18,42 +18,38 @@ This diagram shows the network architecture and connectivity between external sy
 ```mermaid
 graph TB
     subgraph External["External Systems"]
-        GH[GitHub Repository<br/>sfc-gh-miwhitaker/dataquality]
+        GH[Git Repository (Public)]
         User[End Users<br/>via Browser]
     end
-    
+
     subgraph Snowflake["Snowflake Platform"]
         subgraph Integration["Integration Layer"]
             API[SFE_DATAQUALITY_GIT_API_INTEGRATION<br/>API_PROVIDER: git_https_api]
-            GIT[(Git Repository Stage<br/>sfe_dataquality_repo)]
+            GIT[(Git Repository Object<br/>DATAQUALITY_REPO)]
         end
-        
+
         subgraph Compute["Compute Layer"]
             WH[SFE_DATAQUALITY_WH<br/>XSMALL Warehouse]
         end
-        
+
         subgraph Storage["Storage - SNOWFLAKE_EXAMPLE"]
             DB[(SNOWFLAKE_EXAMPLE<br/>Database)]
-            RAW[SFE_RAW_REALESTATE<br/>Schema]
-            STG[SFE_STG_REALESTATE<br/>Schema]
-            ANA[SFE_ANALYTICS_REALESTATE<br/>Schema]
+            PRJ[DATAQUALITY_METRICS<br/>Schema]
         end
-        
+
         subgraph Apps["Application Layer"]
-            SIS[Streamlit in Snowflake<br/>SFE_DATA_QUALITY_DASHBOARD]
+            SIS[Streamlit in Snowflake<br/>DATA_QUALITY_DASHBOARD]
         end
     end
-    
+
     GH -->|HTTPS :443| API
     API --> GIT
     GIT -->|EXECUTE IMMEDIATE FROM| WH
     WH --> DB
-    DB --> RAW
-    DB --> STG
-    DB --> ANA
+    DB --> PRJ
     User -->|HTTPS :443| SIS
     SIS --> WH
-    WH --> ANA
+    WH --> PRJ
 ```
 
 ## Component Descriptions
@@ -61,7 +57,6 @@ graph TB
 ### GitHub Repository
 - **Purpose:** Source code repository for SQL scripts, Streamlit app, and documentation
 - **Technology:** GitHub public repository
-- **Location:** https://github.com/sfc-gh-miwhitaker/dataquality
 - **Dependencies:** None
 
 ### End Users
@@ -76,10 +71,10 @@ graph TB
 - **Location:** Account-level object
 - **Dependencies:** GitHub repository access
 
-### Git Repository Stage (sfe_dataquality_repo)
+### Git Repository Object (DATAQUALITY_REPO)
 - **Purpose:** Snowflake representation of the GitHub repository
 - **Technology:** Snowflake Git Repository
-- **Location:** `SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS`
+- **Location:** `SNOWFLAKE_EXAMPLE.GIT_REPOS`
 - **Dependencies:** API Integration
 
 ### SFE_DATAQUALITY_WH
@@ -97,7 +92,7 @@ graph TB
 ### Streamlit Dashboard
 - **Purpose:** Interactive data quality monitoring UI
 - **Technology:** Streamlit in Snowflake
-- **Location:** `SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE`
+- **Location:** `SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS`
 - **Dependencies:** Warehouse, Analytics views
 
 ## Network Protocols
@@ -110,5 +105,4 @@ graph TB
 
 ## Change History
 
-See `.cursor/DIAGRAM_CHANGELOG.md` for version history.
-
+See repository history for version changes.

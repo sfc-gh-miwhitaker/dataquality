@@ -90,18 +90,18 @@ Contact your Snowflake Solutions Engineer or visit:
 - [Quickstarts](https://quickstarts.snowflake.com)
 ![Reference Implementation](https://img.shields.io/badge/Reference-Implementation-blue)
 ![Ready to Run](https://img.shields.io/badge/Ready%20to%20Run-Yes-green)
-![Expires](https://img.shields.io/badge/Expires-2025--12--31-orange)
+![Expires](https://img.shields.io/badge/Expires-2026--02--05-orange)
 ![Status](https://img.shields.io/badge/Status-Active-success)
 
 # Data Quality Metrics Demo
 
-> DEMONSTRATION PROJECT - EXPIRES: 2025-12-31  
-> This demo uses Snowflake features current as of December 2025.  
+> DEMONSTRATION PROJECT - EXPIRES: 2026-02-05
+> This demo uses Snowflake features current as of January 2026.
 > After expiration, this repository will be archived and made private.
 
-**Author:** SE Community  
-**Purpose:** Data quality monitoring, validation, and reporting for real estate analytics  
-**Created:** 2025-12-01 | **Expires:** 2025-12-31 (30 days) | **Status:** ACTIVE
+**Author:** SE Community
+**Purpose:** Data quality monitoring, validation, and reporting for real estate analytics
+**Created:** 2026-01-06 | **Expires:** 2026-02-05 (30 days) | **Status:** ACTIVE
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 
@@ -123,7 +123,7 @@ This code demonstrates production-grade architectural patterns and best practice
 2. **Open `deploy_all.sql`** - Copy the entire contents of the file in this repo's root
 3. **Create New Worksheet** - Paste the script
 4. **Click "Run All"** - Monitor output for completion
-5. **Open the Dashboard** - Navigate to Streamlit Apps > SFE_DATA_QUALITY_DASHBOARD
+5. **Open the Dashboard** - Navigate to Streamlit Apps > DATA_QUALITY_DASHBOARD
 
 ### Manual Step-by-Step
 
@@ -154,8 +154,8 @@ Automated data quality monitoring using Snowflake's built-in system DMFs:
 
 Real-time data refresh with automatic maintenance:
 
-- `SFE_DT_QUALITY_SUMMARY` - Live quality metrics (1-minute lag)
-- `SFE_DT_MARKET_TRENDS` - Market analytics aggregations (5-minute lag)
+- `DT_QUALITY_SUMMARY` - Live quality metrics (1-minute lag)
+- `DT_MARKET_TRENDS` - Market analytics aggregations (5-minute lag)
 
 ### Streamlit Dashboard
 
@@ -166,11 +166,6 @@ Interactive data quality monitoring interface:
 - Drill-down to failing records
 - One-click remediation workflows
 
-### Security Features
-
-- **Data Classification** - Automatic tagging of sensitive data
-- **Row Access Policies** - Role-based data filtering
-
 ---
 
 ## Objects Created
@@ -179,15 +174,15 @@ Interactive data quality monitoring interface:
 
 | Schema | Object Type | Name | Description |
 |--------|-------------|------|-------------|
-| SFE_RAW_REALESTATE | Table | SFE_RAW_PROPERTY_LISTINGS | Raw property data with quality issues |
-| SFE_STG_REALESTATE | Table | SFE_STG_PROPERTY_LISTINGS | Cleaned property data |
-| SFE_STG_REALESTATE | Table | SFE_STG_MARKET_METRICS | Monthly market aggregates |
-| SFE_ANALYTICS_REALESTATE | Table | SFE_DQ_METRIC_RESULTS | DMF execution results |
-| SFE_ANALYTICS_REALESTATE | Table | SFE_DQ_REMEDIATION_LOG | Remediation tracking |
-| SFE_ANALYTICS_REALESTATE | Dynamic Table | SFE_DT_QUALITY_SUMMARY | Real-time quality metrics |
-| SFE_ANALYTICS_REALESTATE | Dynamic Table | SFE_DT_MARKET_TRENDS | Market analytics |
-| SFE_ANALYTICS_REALESTATE | View | SFE_V_QUALITY_DASHBOARD | Dashboard data view |
-| SFE_ANALYTICS_REALESTATE | Streamlit | SFE_DATA_QUALITY_DASHBOARD | Interactive dashboard |
+| DATAQUALITY_METRICS | Table | RAW_PROPERTY_LISTINGS | Raw property data with quality issues |
+| DATAQUALITY_METRICS | Table | STG_PROPERTY_LISTINGS | Cleaned property data |
+| DATAQUALITY_METRICS | Table | STG_MARKET_METRICS | Monthly market aggregates |
+| DATAQUALITY_METRICS | Table | DQ_METRIC_RESULTS | DMF execution results |
+| DATAQUALITY_METRICS | Table | DQ_REMEDIATION_LOG | Remediation tracking |
+| DATAQUALITY_METRICS | Dynamic Table | DT_QUALITY_SUMMARY | Real-time quality metrics |
+| DATAQUALITY_METRICS | Dynamic Table | DT_MARKET_TRENDS | Market analytics |
+| DATAQUALITY_METRICS | View | V_QUALITY_DASHBOARD | Dashboard data view |
+| DATAQUALITY_METRICS | Streamlit | DATA_QUALITY_DASHBOARD | Interactive dashboard |
 
 ### Account-Level Objects
 
@@ -195,7 +190,6 @@ Interactive data quality monitoring interface:
 |-------------|------|-------------|
 | API Integration | SFE_DATAQUALITY_GIT_API_INTEGRATION | GitHub repository access |
 | Warehouse | SFE_DATAQUALITY_WH | Dedicated demo compute (XSMALL) |
-| Row Access Policy | SFE_RAP_PROPERTY_ACCESS | Role-based data filtering |
 
 ---
 
@@ -218,17 +212,17 @@ To remove all demo objects:
 
 ```sql
 -- Run cleanup script from Git repository
-EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS.sfe_dataquality_repo/branches/main/sql/99_cleanup/teardown_all.sql;
+EXECUTE IMMEDIATE FROM @SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO/branches/main/sql/99_cleanup/teardown_all.sql;
 ```
 
 Or manually:
 
 ```sql
 -- Drop project schemas (preserves database)
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE CASCADE;
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_STG_REALESTATE CASCADE;
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE CASCADE;
-DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_GIT_REPOS CASCADE;
+DROP SCHEMA IF EXISTS SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS CASCADE;
+
+-- Drop Git repository object (do not drop SNOWFLAKE_EXAMPLE.GIT_REPOS schema)
+DROP GIT REPOSITORY IF EXISTS SNOWFLAKE_EXAMPLE.GIT_REPOS.DATAQUALITY_REPO;
 
 -- Drop warehouse
 DROP WAREHOUSE IF EXISTS SFE_DATAQUALITY_WH;
@@ -280,6 +274,3 @@ See `docs/03-CLEANUP.md` for additional troubleshooting.
 - [Streamlit in Snowflake](https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit)
 
 ---
-
-*Generated by builddemo | SE Community | 2025-12-01*
-

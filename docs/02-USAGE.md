@@ -1,8 +1,8 @@
 # Usage Guide - Data Quality Metrics Demo
 
-Author: SE Community  
-Last Updated: 2025-12-01  
-Expires: 2025-12-31 (30 days from creation)
+Author: SE Community
+Last Updated: 2026-01-06
+Expires: 2026-02-05 (30 days from creation)
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 
@@ -18,14 +18,7 @@ This guide explains how to use the Data Quality Metrics demo to monitor data qua
 
 1. Open Snowsight (https://app.snowflake.com)
 2. Navigate to **Apps** > **Streamlit**
-3. Click **SFE_DATA_QUALITY_DASHBOARD**
-
-### Direct URL
-
-The dashboard URL follows this pattern:
-```
-https://<account>.snowflakecomputing.com/streamlit-apps/<database>.<schema>.<app_name>
-```
+3. Click **DATA_QUALITY_DASHBOARD**
 
 ---
 
@@ -61,13 +54,13 @@ Click any category to see:
 Query the results table directly:
 
 ```sql
-SELECT 
+SELECT
     table_name,
     column_name,
     metric_name,
     metric_value,
     execution_time
-FROM SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS
+FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DQ_METRIC_RESULTS
 ORDER BY execution_time DESC
 LIMIT 100;
 ```
@@ -78,25 +71,41 @@ Use SYSTEM$DATA_METRIC_SCAN to retrieve actual failing records:
 
 ```sql
 -- Get records with NULL prices
-SELECT * FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
-    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS',
+SELECT
+    listing_id,
+    address,
+    market_area,
+    price
+FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
+    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS',
     METRIC_NAME => 'SNOWFLAKE.CORE.NULL_COUNT',
     ARGUMENT_NAME => 'PRICE'
-));
+))
+LIMIT 100;
 
 -- Get records with blank property types
-SELECT * FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
-    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS',
+SELECT
+    listing_id,
+    address,
+    property_type
+FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
+    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS',
     METRIC_NAME => 'SNOWFLAKE.CORE.BLANK_COUNT',
     ARGUMENT_NAME => 'PROPERTY_TYPE'
-));
+))
+LIMIT 100;
 
 -- Get duplicate listing IDs
-SELECT * FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
-    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS',
+SELECT
+    listing_id,
+    address,
+    updated_at
+FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
+    REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS',
     METRIC_NAME => 'SNOWFLAKE.CORE.DUPLICATE_COUNT',
     ARGUMENT_NAME => 'LISTING_ID'
-));
+))
+LIMIT 100;
 ```
 
 ### Manual DMF Execution
@@ -106,17 +115,17 @@ Trigger DMF evaluation manually:
 ```sql
 -- Run NULL_COUNT on price column
 SELECT SNOWFLAKE.CORE.NULL_COUNT(
-    SELECT PRICE FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    SELECT PRICE FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 );
 
 -- Run BLANK_COUNT on property_type column
 SELECT SNOWFLAKE.CORE.BLANK_COUNT(
-    SELECT PROPERTY_TYPE FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    SELECT PROPERTY_TYPE FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 );
 
 -- Run DUPLICATE_COUNT on listing_id column
 SELECT SNOWFLAKE.CORE.DUPLICATE_COUNT(
-    SELECT LISTING_ID FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    SELECT LISTING_ID FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 );
 ```
 
@@ -131,26 +140,35 @@ Update records with NULL prices using median value:
 ```sql
 -- Calculate median price by market area
 WITH median_prices AS (
-    SELECT 
+    SELECT
         market_area,
         MEDIAN(price) AS median_price
-    FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
     WHERE price IS NOT NULL
     GROUP BY market_area
 )
-UPDATE SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS t
+UPDATE SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS t
 SET price = m.median_price
 FROM median_prices m
 WHERE t.market_area = m.market_area
   AND t.price IS NULL;
 
 -- Log the remediation action
-INSERT INTO SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG
-(action_taken, records_affected, remediated_by, remediated_at)
-VALUES ('Fixed NULL prices with median by market_area', 
-        (SELECT COUNT(*) FROM TABLE(SYSTEM$DATA_METRIC_SCAN(...))),
-        CURRENT_USER(),
-        CURRENT_TIMESTAMP());
+WITH failing AS (
+    SELECT listing_id
+    FROM TABLE(SYSTEM$DATA_METRIC_SCAN(
+        REF_ENTITY_NAME => 'SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS',
+        METRIC_NAME => 'SNOWFLAKE.CORE.NULL_COUNT',
+        ARGUMENT_NAME => 'PRICE'
+    ))
+)
+INSERT INTO SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DQ_REMEDIATION_LOG
+    (action_taken, records_affected, remediated_by, remediated_at)
+SELECT
+    'Fixed NULL prices with median by market_area' AS action_taken,
+    (SELECT COUNT(*) FROM failing) AS records_affected,
+    CURRENT_USER() AS remediated_by,
+    CURRENT_TIMESTAMP() AS remediated_at;
 ```
 
 ### Fix Blank Values
@@ -158,7 +176,7 @@ VALUES ('Fixed NULL prices with median by market_area',
 Replace blank property types with 'Unknown':
 
 ```sql
-UPDATE SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+UPDATE SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 SET property_type = 'Unknown'
 WHERE property_type IS NULL OR TRIM(property_type) = '';
 ```
@@ -168,10 +186,10 @@ WHERE property_type IS NULL OR TRIM(property_type) = '';
 Keep only the most recent version of duplicate records:
 
 ```sql
-DELETE FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+DELETE FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 WHERE listing_id IN (
-    SELECT listing_id 
-    FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+    SELECT listing_id
+    FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
     QUALIFY ROW_NUMBER() OVER (PARTITION BY listing_id ORDER BY updated_at DESC) > 1
 );
 ```
@@ -185,14 +203,14 @@ WHERE listing_id IN (
 Check Dynamic Table refresh status:
 
 ```sql
-SELECT 
+SELECT
     name,
     refresh_mode,
     target_lag,
     last_completed_refresh_time,
     next_scheduled_refresh_time
 FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLE_REFRESH_HISTORY(
-    NAME_PREFIX => 'SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_'
+    NAME_PREFIX => 'SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_'
 ))
 ORDER BY last_completed_refresh_time DESC;
 ```
@@ -202,8 +220,8 @@ ORDER BY last_completed_refresh_time DESC;
 Manually trigger a refresh:
 
 ```sql
-ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_QUALITY_SUMMARY REFRESH;
-ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_MARKET_TRENDS REFRESH;
+ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_QUALITY_SUMMARY REFRESH;
+ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DT_MARKET_TRENDS REFRESH;
 ```
 
 ---
@@ -213,11 +231,11 @@ ALTER DYNAMIC TABLE SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DT_MARKET_TRE
 ### Quality Trends Over Time
 
 ```sql
-SELECT 
+SELECT
     DATE_TRUNC('hour', execution_time) AS hour,
     metric_name,
     AVG(metric_value) AS avg_issues
-FROM SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DQ_METRIC_RESULTS
+FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DQ_METRIC_RESULTS
 GROUP BY 1, 2
 ORDER BY 1 DESC;
 ```
@@ -225,13 +243,13 @@ ORDER BY 1 DESC;
 ### Market Area Quality Comparison
 
 ```sql
-SELECT 
+SELECT
     market_area,
     COUNT(*) AS total_listings,
     SUM(CASE WHEN price IS NULL THEN 1 ELSE 0 END) AS null_prices,
     SUM(CASE WHEN TRIM(property_type) = '' THEN 1 ELSE 0 END) AS blank_types,
     ROUND(100.0 - (SUM(CASE WHEN price IS NULL OR TRIM(property_type) = '' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2) AS quality_score
-FROM SNOWFLAKE_EXAMPLE.SFE_RAW_REALESTATE.SFE_RAW_PROPERTY_LISTINGS
+FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.RAW_PROPERTY_LISTINGS
 GROUP BY market_area
 ORDER BY quality_score ASC;
 ```
@@ -239,12 +257,12 @@ ORDER BY quality_score ASC;
 ### Remediation History
 
 ```sql
-SELECT 
+SELECT
     action_taken,
     records_affected,
     remediated_by,
     remediated_at
-FROM SNOWFLAKE_EXAMPLE.SFE_ANALYTICS_REALESTATE.SFE_DQ_REMEDIATION_LOG
+FROM SNOWFLAKE_EXAMPLE.DATAQUALITY_METRICS.DQ_REMEDIATION_LOG
 ORDER BY remediated_at DESC;
 ```
 
@@ -258,6 +276,3 @@ ORDER BY remediated_at DESC;
 - **Clean Up Demo** - See `docs/03-CLEANUP.md`
 
 ---
-
-*Generated by builddemo | SE Community | 2025-12-01*
-
