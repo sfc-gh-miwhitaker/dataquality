@@ -26,13 +26,13 @@ jobs:
           import sys
 
           text = pathlib.Path("deploy_all.sql").read_text(encoding="utf-8")
-          m = re.search(r"^\\s*\\*\\s*EXPIRES:\\s*(\\d{4}-\\d{2}-\\d{2})\\s*$", text, flags=re.M)
+          m = re.search(r"^\s*\*\s*EXPIRES:\s*(\d{4}-\d{2}-\d{2})\s*$", text, flags=re.M)
           if not m:
             print("ERROR: Could not find a line like '* EXPIRES: YYYY-MM-DD' in deploy_all.sql", file=sys.stderr)
             sys.exit(1)
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
-            f.write(f"expires={m.group(1)}\\n")
+            f.write(f"expires={m.group(1)}\n")
           PY
 
       - name: Determine whether repository is expired
